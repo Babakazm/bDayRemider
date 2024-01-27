@@ -1,24 +1,27 @@
 class BirthdayReminder {
-    constructor() {
-        this.birthdays = new Map();
-    }
 
-    addBirthday(name, date) {
-        if (this.birthdays.has(name)) {
-            return `${name} already exists in the database.`;
-        } else {
-            this.birthdays.set(name, new Date(date));
-            return `Birthday for ${name} added.`;
+    addBirthday(name, birthday) {
+        const birthdays = JSON.parse(localStorage.getItem('birthdays')) || {};
+        if (birthdays[name]) {
+            return `${name} already exists.`;
         }
+        birthdays[name] = birthday;
+        localStorage.setItem('birthdays', JSON.stringify(birthdays));
+        return `Birthday for ${name} added.`;
     }
 
-    checkTodaysBirthdays() {
-        const today = new Date();
-        let message = "No birthdays today.";
+    checkBirthdaysOnDate(dateToCheck) {
+        const selectedDate = new Date(dateToCheck);
+        const birthdays = JSON.parse(localStorage.getItem('birthdays')) || {};
+        let message = "No birthdays on this date.";
 
-        this.birthdays.forEach((date, name) => {
-            if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth()) {
-                message = `Happy Birthday, ${name}!`;
+        Object.keys(birthdays).forEach(name => {
+            let bDate = new Date(birthdays[name]);
+            if (bDate.getDate() === selectedDate.getDate() && bDate.getMonth() === selectedDate.getMonth()) {
+                if (message === "No birthdays on this date.") {
+                    message = "";
+                }
+                message += `Happy Birthday, ${name}!\n`;
             }
         });
 
@@ -27,13 +30,16 @@ class BirthdayReminder {
 }
 
 const reminder = new BirthdayReminder();
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('message').innerText = reminder.checkTodaysBirthdays();
-});
 
 function addBirthday() {
     const name = document.getElementById('name').value;
     const birthday = document.getElementById('birthday').value;
     const message = reminder.addBirthday(name, birthday);
+    document.getElementById('message').innerText = message;
+}
+
+function checkBirthdays() {
+    const checkDate = document.getElementById('checkDate').value;
+    const message = reminder.checkBirthdaysOnDate(checkDate);
     document.getElementById('message').innerText = message;
 }
